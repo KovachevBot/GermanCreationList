@@ -59,6 +59,9 @@ def main():
                         absent_words.add(word)
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        print(e)
+        print(f"Error took place during the execution of the program at word {word}")
 
     dump_checked_words(checked_words)
     with open("missing_words.txt", mode="w", encoding="utf-8") as missing_words:
