@@ -30,6 +30,13 @@ def generate_missing_words_page(missing_words: set) -> str:
     return "\n".join(f"[[{word}]]" for word in missing_words)
 
 
+def has_german(page: pywikibot.Page) -> bool:
+    if not page.exists():
+        return False
+    
+    return "==German==" in page.text
+
+
 def main():
     site = pywikibot.Site("en", "wiktionary")
 
@@ -44,7 +51,7 @@ def main():
                 else:
                     # Word has not yet been checked, so we don't know whether it is on Wiktionary or not
                     page = pywikibot.Page(site, word)
-                    if page.exists():
+                    if has_german(page):
                         checked_words[word] = True
                     else:
                         # The word is not on Wiktionary

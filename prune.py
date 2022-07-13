@@ -26,8 +26,14 @@ def generate_pruned_dictionary(dict_file: TextIOWrapper) -> set[str]:
 def process_line(line: str) -> str:
     """Receives a dictionary entry and removes all data besides the German term."""
     # Format of each entry: term \t translation \t part of speech \t label (optional, but there is always a preceding tab)
-    term, _, _, _ = line.split("\t")
+    term, _, pos, _ = line.split("\t")
     
+    # Return if we see declined verb forms without meaningful adjectival uses
+    if pos == "past-p":
+        # Note that past-participles with additional adjective senses have the pos label "adj past-p",
+        # so they aren't affected.
+        return ""
+
     # Return in cases where whole sentences or phrases involving punctuation are met
     if "/" in term:
         return ""
@@ -38,10 +44,14 @@ def process_line(line: str) -> str:
 
     term = re.sub(LABEL_PATTERN, "", term)
 
-    noun_search = re.search(GENDER_PATTERN, term)
-    is_noun = bool(noun_search)
+    is_noun = pos == "noun"
     if is_noun:
-        if noun_search.group(0) == "{pl}":
+        try:
+            gender = re.search(GENDER_PATTERN, term).group(0)
+        except AttributeError:
+            # Gender is ill-defined, so word is likely not relevant
+            return ""
+        if gender == "{pl}":
             return ""
         term = re.sub(GENDER_PATTERN, "", term)
 
